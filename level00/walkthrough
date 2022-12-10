@@ -1,0 +1,8 @@
+gdb level00
+
+disas main
+
+see cmp
+
+input vs hex 149c (5276)
+

@@ -1,0 +1,12 @@
+we can see two functions 
+
+verify_user_name
+
+verify_password
+
+but even if we type correct answer the program just exits
+
+so we need to use ret2libc exploit
+
+we can see that second input through fgets writes input to stack so we can rewrite eip to system address
+
