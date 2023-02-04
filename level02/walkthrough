@@ -1,0 +1,6 @@
+Printf function uses user input as an argument (username), we can exploit with looking stack with %p 
+
+
+2 questions:
+why password is there where it is
+why reverse bro?
