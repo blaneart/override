@@ -1,38 +1,44 @@
 #include <stdio.h>
 #include <string.h>
 
-
 char a_user_name[256];
 
-char true_name[10] = "dat_wil";
-
-int verify_user_name(void)
+int verify_user_name(char *username)
 {
-    return memcmp(a_user_name, "dat_wil", 7);
+    puts("verifying username....\n");
+    return strcmp(username, "dat_wil");
 }
 
-int verify_password(char *password)
+int verify_user_pass(char *password)
 {
     return memcmp(password, "admin", 5);
 }
 int main(){
+    char password[64]; // Assuming by the memset
+    int is_correct = 0;
 
-    char password[84];
-    int is_correct;
+    memset(password, 0, 64);
     puts("********* ADMIN LOGIN PROMPT *********\n");
     printf("Enter Username: ");
-    fgets(a_user_name, 256, 0);
-    is_correct = verify_user_name();
-    puts("verifying username....\n", 1);
-    if (is_correct)
-    {
-        puts("verifying username....\n", 1);
-        printf("Enter Password: ");
-        fgets(password, 100, 0);
-        is_correct = verify_password(password);
-        if (is_correct)
-            return 0;
+    fgets(a_user_name, 256, stdin);
+    is_correct = verify_user_name(a_user_name);
+    if (is_correct != 0) {
+        puts("nope, incorrect username...\n");
+        return 1;
     }
-
-    return 0;
+    puts("Enter Password: ");
+    fgets(password, 100, stdin);
+    is_correct = verify_user_pass(password);
+    
+    // Here, assembly doesn't make any sense at all
+    if (is_correct == 0) {
+        puts("nope, incorrect password...\n");
+        return 1;
+    } else {
+        if (is_correct == 0) {
+           return 0; 
+        }
+        puts("nope, incorrect password...\n");
+        return 1;
+    }
 }
