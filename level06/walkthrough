@@ -1,0 +1,7 @@
+set eax after ptrace 
+we have time
+b *auth + 114
+
+b *auth + 286
+then we can look for our pass in ebp -0x10
+same user === same pass
