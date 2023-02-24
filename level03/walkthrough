@@ -1,0 +1,9 @@
+Disas main shows that we wait for integer input and send it with 0x1337d00d as the arguments to test function.
+In test function we substruct value of our input integer from 0x1337d00d. The result we compare with 21(0x15).
+ If result of substraction is bigger than 21 we call decrypt() with rand() as an argument. Else we shift left by 2
+ and add 0x80489f0 to the result of substruction. So we need to test 21 values.
+The result of this operation is going to be the address that we call as our instruction. Correct input gives us 
+0x8048a38 that stores 0x08048816 address (test + 207).
+
+
+Password:322424827

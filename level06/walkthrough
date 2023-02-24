@@ -1,7 +1,13 @@
-set eax after ptrace 
-we have time
+In disas main we can see call to auth function.
+If value returned from auth is equal to 1 we call system("/bin/sh").
+Looking at auth function we see comparison of input and local variable. If we make a breakpoint inside auth function
+it is possible to see the password.
+We need to go step by step and set breakpoints
 b *auth + 114
-
+set $eax=1
 b *auth + 286
 then we can look for our pass in ebp -0x10
 same user === same pass
+
+user = aaaaaa
+serial 6231562
