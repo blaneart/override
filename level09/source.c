@@ -1,32 +1,32 @@
 
 
-void set_msg()
+void set_msg(char *msg)
 {
     char *local[128];
     puts(">: Msg @Unix-Dude");
     printf(">>: ");
-    fgets(msg, 1024, stdin);
+    fgets(local, 1024, stdin);
     strncpy(msg, local, 180);
 }
 
 void set_username(char *username)
 {
 
-    int i
+    char *temp_user;
     bzero(username);
     puts(">: Enter your username");
     printf(">>: ");
-    fgets(username ,128, stdin);
+    fgets(temp_user ,128, stdin);
     while ()
-    printf(">: Welcome, %s", );
+    printf(">: Welcome, %s", username);
 }
 
 void handle_msg()
 {
     char username[40] = {0,0,0,0,0}
     set_username(username);
-    set_msg();
-    put(">: Msg sent!");
+    set_msg(username);
+    puts(">: Msg sent!");
 }
 
 int main(){
