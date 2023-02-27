@@ -7,12 +7,14 @@ int main()
 {
     pid_t pid; // $esp+0xac
     char buffer[32];
+    int ptrace_ret = 0; // $esp+0xa8
+    int stat = 0;// $esp+0x1c
+
     pid = fork();
     // child process has pid=0
     // parent has pid=SOME_NUMBER
     bzero(buffer, 32);
-    int ptrace_ret = 0; // $esp+0xa8
-    int stat = 0;// $esp+0x1c
+    
 
     if (pid != 0)
     {
