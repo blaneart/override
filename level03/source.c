@@ -1,27 +1,24 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
-void decrypt()
+void decrypt(int input)
 {
-    int i =1971092817; // -0x1d(%ebp)
+    char *key = "Q}|u`sfg~sf{}|a3";
+    int len = strlen(key);
+    int counter = 0;
 
-    long j = 1734767456; // -0x19(%ebp)
-
-    long k = 2070311806; //-0x15(%ebp)
-
-    long f = 862026877; //-0x11(%ebp)
-
-    int p = 0; // -0xd(%ebp)
-
-
-    int u = -1; // -0x2c(%ebp)
-
-
-    if()
+    while (len < counter) {
+        key[counter] = key[counter] ^ input;
+        counter += 1; 
+    }
+    if (strncmp(key, "Congratulations!", 11) == 0) {
         system("/bin/sh");
-    else
+    }
+    else {
         puts("\nInvalid Password");
+    }   
 }
 
 void test(int i, int answer)
@@ -29,14 +26,37 @@ void test(int i, int answer)
     int param1 = i;
     int param2 = answer;
     param2 -= param1;
-    if (0x15 < param2)
-    {
-        decrypt(rand());
-        return ;
-    }
 
-    void *ptr = (param2 << 2) + 0x80489f0;
-    ptr();
+    switch (param2) {
+    case 0:
+    case 10:
+    case 11:
+    case 12:
+    case 13:
+    case 14:
+    case 15:
+        decrypt(rand());
+        return;
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+    case 7:
+    case 8:
+    case 9:
+    case 16:
+    case 17:
+    case 18:
+    case 19:
+    case 21:
+        decrypt(answer);
+        return;
+    default:
+        decrypt(rand());
+        return;
+    }
 }
 
 int main()
