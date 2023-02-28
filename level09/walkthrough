@@ -1,19 +1,15 @@
-$rbp -0x98  0x7fffffffe458 
 
-0x7fffffffe500 -address where we save username
+Running strings ./level09 to check functions inside the executable shows secret_backdoor function
+that executes system with command from stdin. However, secret_backdoor function isn't called inside main or any function.
+Normally, program sets username and  message through stdin and quits. String is allocated inside handle_msg function
+(first one that is called). After this it prints out username name and uses same string to wrtie there message.
+The size of message is 128 bytes but fgets that writes from stdin is reads 1024 bytes. This size is enough to reach return pointer of handle_msg function
+if we write it to string allocated in handle_msg.
+The problem is strncpy that writes read data to this string is only 180 bytes long and we need 200 + 8. 
+But this size is stored next to the address string allocated on the stack of set_username function. So we can rewrite it setting our username to 
+40 + desired size (in our case it is 208 or 0xd0 in hex)
+So no we can rewrite return pointer with 200 + address of secret_backdoor (x000055555555488c)
 
-
-0x7fffffffe5d8 -- rip main
-
-0x7fffffffe5c8 - rip handle_msg
-
-0x7fffffffe4f8 -r rip set_username
-
-
-0x7fffffffe458 - rbp -0x98 
-
-
-0x7fffffffe460 - writing username 
-
+Final exploit will look like this:
 
 python -c 'print("a" * 40 + "\xd0\n" + "b" *200 + "\x00\x00\x55\x55\x55\x55\x48\x8c"[::-1])' > /tmp/exploit

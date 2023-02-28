@@ -1,3 +1,14 @@
+#include <stdio.h>
+#include <aio.h>
+#include <string.h>
+
+u_int64_t hi(u_int64_t x) {
+    return x >> 32;
+}
+
+u_int64_t lo(u_int64_t x) {
+    return ((1ULL << 32) - 1) & x;
+}
 
 
 int auth(char *login, unsigned int serial)
@@ -5,8 +16,9 @@ int auth(char *login, unsigned int serial)
     unsigned int i = 0;
     int length;
     int ret;
+    int pass; //  ebp - 0x10
     i = strcspn(login, "\n");
-    serial += i;
+    serial += i; // 0x8 + ebp
     length = strnlen(login, 32);
     if (length - 5 > 0)
     {
@@ -17,8 +29,52 @@ int auth(char *login, unsigned int serial)
             puts("***********************************");
             return 1;
         }
-        serial += 3;
+        // login = login;
+        int l = login[0];
+        l = l ^ 0x1337;
+        ret = 0;
+        while (length - 1 > ret)
+        {
+            //https://stackoverflow.com/questions/1815367/catch-and-compute-overflow-during-multiplication-of-two-large-integers
+            if (login[ret] > 31)
+            {
+                u_int64_t s0, s1, s2, s3; 
+                int k = login[ret];
+                u_int64_t a = k ^ pass; 
+                u_int64_t b =  0x88233b2;
+                u_int64_t x = lo(a) * lo(b);
+                s0 = lo(x);
+                x = hi(a) * lo(b) + hi(x);
+                s1 = lo(x);
+                s2 = hi(x);
+                x = s1 + lo(a) * hi(b);
+                s1 = lo(x);
+                x = s2 + hi(a) * hi(b) + hi(x);
+                s2 = lo(x);
+                s3 = hi(x);
+                u_int64_t result = s1 << 32 | s0;
+                u_int64_t carry = s3 << 32 | s2;
+                pass = result  >> 2;
+                pass = pass + carry;
+                pass = pass >> 10;
+                pass = pass * 0x539;
+                printf("%u\n", pass);
+
+                pass = pass - carry;
+                ret= ret+1;
+            }
+            else
+            {
+                printf("here");
+                return 1;
+            }
+        }
     }
+    printf("%u", pass);
+
+    if (pass == serial)
+        return 0;
+    return 1;
 }
 
 
@@ -37,9 +93,9 @@ int main()
     puts("***********************************");
     printf("-> Enter Serial:");
 
-    scanf("%u", serial);
+    scanf("%u", &serial);
 
-    if (auth(login, serial))
+    if (!auth(login, serial))
         system("/bin/sh");
     else
         return 1;
@@ -47,12 +103,3 @@ int main()
     return 0;
 
 }
-
-0x1e240
-
-
-0x005f1e94
-
-0x5f0143
-
-0x005f160a
