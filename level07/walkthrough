@@ -1,13 +1,95 @@
-0xffffd70c eip
+# Overview
+
+This binary can store arbitrary data in a 100-byte memory area.
+However, it doesn't check if the memory that is written to is inside
+the 100-byte area. We can therefore write everywhere below that area.
+
+# Exploit
+
+It would be cool to redirect program execution to somewhere under our control.
+
+Say we want to overwrite the main() saved instruction pointer.
+
+gdb in `info frame` tells us that eip is at 0xffffd70c.
+
+The stack frame inside main is at 0xffffd520.
+
+Memory starts at 0xffffd544.
+
+Therefore, we should be able to write the eip by writing at index 456.
+
+However, this index is reserved for wil. This is because 456 is divisible by 3.
+
+We can't reach other instruction pointers :(
+
+# What can we do?
+
+We're noticing that in assembly, the array subscript operator looks like this:
+
+```asm
+# Eax is the index
+# It is multiplied by 4 to get integer / pointer number 'index'
+shl $0x2, %eax
+
+# 0x8(%ebp) is the address of the 0th byte of the array
+add 0x8(%ebp), %eax
+```
+
+The index is left-shifted by 2, that is to say, multiplied by 4.
+
+We should be able to craft a number that is so big that
+multiplied by 4 it will be equal to 456 (the target index), but
+before that multiplication it is not divisible by 3. 
+
+# Draw me like one of your french binaries
+
+In binary it is going to look like this:
+
+[2 throwaway bits] [ 21 zero, to fill up the 32-bit int ] [ 456 / 4 in binary ]
+
+0 0                 000000000000000000000                  1110010
+
+Throwaway bits are going to be discarded by the 
+left shift. We can tweak them to make the initial number not divisible by 3
+
+Let's try 
+
+01000000000000000000000001110010
+
+which is 1073741938
+
+Is not divisible by 3!
+
+Writing to this number causes a segfault, we're close.
+
+## Final thoughts
+
+We want to rewrite the eip with the address of system()
+
+It is 0xf7e6aed0, or 4159090384.
+
+It should be at index 1073741938 (explained above).
+
+We also need to store the argument (/bin/sh).
+
+It is located at 0xf7f897ec, or 4160264172 (explained in level92). 
+
+It should be in the eip + 2 pointers, that is 0xffffd714.
+
+0xffffd714 is at offset 464 compared to memory, so we need to write to 
+index 116.
 
 
-0xffffd6d8 - bravo
-0xffffd6a8 - bravo
-0xffffd544 - buf
+Overall:
 
-engineer binary shift left
+store
+Number: 4159090384
+Index: 1073741938
 
-0b10000000000000000000000001110010 (114) (eip address) indexx == 2147483762
+store
+Number: 4160264172
+Index: 116
 
+quit
 
-0xf7e6aed0
+voila!

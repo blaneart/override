@@ -1,3 +1,8 @@
+
+// There are some functions that look like they are from
+// https://github.com/RPISEC/MBE/blob/master/include/utils.h
+// Stumbled upon them while googling some names.
+
 void clear_stdin(void)
 {
     char x = 0;
@@ -9,6 +14,12 @@ void clear_stdin(void)
     }
 }
 
+/* clear argv to avoid shellcode */
+#define clear_argv(_argv) \
+    for (; *_argv; ++_argv) { \
+        memset(*_argv, 0, strlen(*_argv)); \
+    }
+#define clear_envp(_envp) clear_argv(_envp)
 
 unsigned int get_unum(void)
 {
@@ -19,16 +30,16 @@ unsigned int get_unum(void)
     return res;
 }
 
-int read_number(char *buf)
+int read_number(char *memory)
 {
     int i = 0; //c
     printf("Index: ");
     i = get_unum();
-    printf(" Number at data[%u] is %u\n", i, buf[i]);
+    printf(" Number at data[%u] is %u\n", i, memory[i]);
     return 0;
 }
 
-int store_number(buf)
+int store_number(memory)
 {
     int i = 0;//-10
     int j = 0;//-c
@@ -45,29 +56,20 @@ int store_number(buf)
         puts(" *** ERROR! ***");
         return 1;
     }
-    buf[j] = i;
+    memory[j] = i;
 }
 
 
 int main(int argc, char *argv[], char *envp[]) {
-    int alpha = 0;    // 1b4
-    char bravo[20] = {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"};  //1b8
+    int ret = 0;    // 1b4
+    char input[20] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, \
+                      0, 0, 0, 0, 0, 0, 0, 0, 0,};  //1b8
 
-    char buf[100]; //0x24
-    bzero(buf, 100);
+    char memory[100]; //0x24
+    bzero(memory, 100);
 
-    // Clean args
-    while (*argv != NULL){
-        memset(argv, 0, strlen(argv));
-        argv++;
-    }
-
-    // Clean the environment
-    while (*envp != NULL)
-    {
-        memset(envp, 0, strlen(envp));
-        envp++;
-    }
+    clear_argv(argv);
+    clear_envp(envp);
     
     puts("----------------------------------------------------\n\
   Welcome to wil's crappy number storage service!   \n\
@@ -82,20 +84,20 @@ int main(int argc, char *argv[], char *envp[]) {
     while(true)
     {
         printf("Input command: ");
-        alpha = 1;
-        fgets(bravo, 20, stdin);
-        strlen(bravo);
-        if (strncmp(bravo, "store", 5) == 0)
-            alpha = store_number(buf);
-        if (strncmp(bravo, "read", 4) == 0)
-            alpha = read_number(buf)
-        if (strncmp(bravo, "quit", 4) == 0)
+        ret = 1;
+        fgets(input, 20, stdin);
+        strlen(input);
+        if (strncmp(input, "store", 5) == 0)
+            ret = store_number(memory);
+        if (strncmp(input, "read", 4) == 0)
+            ret = read_number(memory)
+        if (strncmp(input, "quit", 4) == 0)
             return 0;
-        if (alpha == 0)
-            printf("Completed %s command successfully\n", bravo);
+        if (ret == 0)
+            printf("Completed %s command successfully\n", input);
         else
-            printf(" Failed to do %s command\n", bravo);
-        bravo[20] = {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"}; 
+            printf(" Failed to do %s command\n", input);
+        bzero(input, 20); 
     }
     return 0;
 }
