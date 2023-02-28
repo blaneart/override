@@ -1,5 +1,3 @@
-
-
 void clear_stdin(void)
 {
     char x = 0;
@@ -51,40 +49,24 @@ int store_number(buf)
 }
 
 
-int main(void) {
+int main(int argc, char *argv[], char *envp[]) {
     int alpha = 0;    // 1b4
     char bravo[20] = {"\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"};  //1b8
-    //1bc
-    //1c0
-    //1c4
-    //1c8
-
 
     char buf[100]; //0x24
     bzero(buf, 100);
 
-    // jump to 199
-
-    void *onec; // 0x1c
-    while (*onec != 0){
-        // jump to 132
-        int len = strlen(onec);
-        edx = len- 1; 
-        eax = onec;
-        //maybe *onec
-        memset(onec, 0, edx);
-        onec++;
+    // Clean args
+    while (*argv != NULL){
+        memset(argv, 0, strlen(argv));
+        argv++;
     }
-    void *eighteen; // 0x18
 
-    while (*eighteen != 0)
+    // Clean the environment
+    while (*envp != NULL)
     {
-        int len = strlen(eighteen);
-        edx = len- 1; 
-        eax = eighteen;
-        //maybe *onec
-        memset(eighteen, 0, edx);
-        eighteen++;        
+        memset(envp, 0, strlen(envp));
+        envp++;
     }
     
     puts("----------------------------------------------------\n\
