@@ -35,8 +35,8 @@ void test(int i, int answer)
         return ;
     }
 
-    (param2 << 2) + 0x80489f0;
-
+    void *ptr = (param2 << 2) + 0x80489f0;
+    ptr();
 }
 
 int main()
