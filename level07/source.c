@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <string.h>
+
 
 // There are some functions that look like they are from
 // https://github.com/RPISEC/MBE/blob/master/include/utils.h
@@ -39,7 +42,7 @@ int read_number(char *memory)
     return 0;
 }
 
-int store_number(memory)
+int store_number(char *memory)
 {
     int i = 0;//-10
     int j = 0;//-c
@@ -81,7 +84,7 @@ int main(int argc, char *argv[], char *envp[]) {
 ----------------------------------------------------\n\
    wil has reserved some storage :>                 \n\
 ----------------------------------------------------\n");
-    while(true)
+    while(1)
     {
         printf("Input command: ");
         ret = 1;
@@ -90,7 +93,7 @@ int main(int argc, char *argv[], char *envp[]) {
         if (strncmp(input, "store", 5) == 0)
             ret = store_number(memory);
         if (strncmp(input, "read", 4) == 0)
-            ret = read_number(memory)
+            ret = read_number(memory);
         if (strncmp(input, "quit", 4) == 0)
             return 0;
         if (ret == 0)
