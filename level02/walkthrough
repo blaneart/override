@@ -35,4 +35,4 @@ for block in hex_blocks:
 
 # A newline for style
 print()
-```python3
+```

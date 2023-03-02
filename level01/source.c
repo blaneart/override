@@ -13,6 +13,7 @@ int verify_user_pass(char *password)
 {
     return memcmp(password, "admin", 5);
 }
+
 int main(){
     char password[64]; // Assuming by the memset
     int is_correct = 0;

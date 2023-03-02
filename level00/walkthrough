@@ -1,8 +1,5 @@
-gdb level00
+# Overview
 
-disas main
-
-see cmp
-
-input vs hex 149c (5276)
-
+The level is pretty simple. If you open the binary in gdb,
+you can see that the binary compares the input number
+with a constant 149c (5276).
