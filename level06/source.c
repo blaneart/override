@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include <aio.h>
 #include <string.h>
+#include <sys/ptrace.h>
+#include <stdlib.h>
+
 
 u_int64_t hi(u_int64_t x) {
     return x >> 32;
