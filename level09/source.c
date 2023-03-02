@@ -1,3 +1,7 @@
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
 
 void secret_backdoor()
 {
@@ -17,9 +21,9 @@ void set_msg(char *msg)
 
 void set_username(char *username)
 {
-
+    int i = 0;
     char temp_user[40];
-    bzero(username);
+    bzero(username, 40);
     puts(">: Enter your username");
     printf(">>: ");
     fgets(temp_user ,128, stdin);
