@@ -3,6 +3,10 @@
 #include <sys/prctl.h>
 #include <signal.h>
 #include <sys/user.h>
+#include <sys/ptrace.h>
+#include <stdio.h>
+#include <strings.h>
+
 int main()
 {
     pid_t pid; // $esp+0xac
